@@ -14,7 +14,7 @@ public class Example1 {
     private void incrementAge(Person person, int input) {
         person.setAge(person.getAge() + input);
     }
-
+ 
     // This is method is similar to above method "exmaple", as it follows all the rules to be called
     // as a function, so should "example" is also a function? Reason for this example is we split
     // one method into multiple methods for readability of the code..
