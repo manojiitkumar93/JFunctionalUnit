@@ -4,7 +4,7 @@ package functionalExamples;
 public class Example1 {
 
     // This method it internally calls another void method, so can it be called as a function? If we
-    // say void method is not a function then function which is calling a void method?
+    // say void method is not a function then function which is calling a void method ?
     public Person example(int input) {
         Person person = new Person(input, "name");
         incrementAge(person, 12);
