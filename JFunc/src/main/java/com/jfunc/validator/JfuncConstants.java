@@ -1,0 +1,11 @@
+package com.jfunc.validator;
+
+public class JfuncConstants {
+    public static final String SYSTEMS_PRINTLN = "java/io/PrintStream";
+    public static final String LOGGER = "Logger";
+    public static final String VOID = "void";
+    public static final String ISFUNCTIONAL = "isFunctional";
+    public static final String METHODRETURNTYPE = "methodReturnType";
+    public static final String REASONS = "Reasons";
+    public static final String LINENUMBER = "Line : ";
+}
