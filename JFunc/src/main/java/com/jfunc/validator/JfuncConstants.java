@@ -8,4 +8,6 @@ public class JfuncConstants {
     public static final String METHODRETURNTYPE = "methodReturnType";
     public static final String REASONS = "Reasons";
     public static final String LINENUMBER = "Line : ";
+    public static final String GLOBAL = "Global fields are referred";
+    public static final String STRING_CLASS = "java.lang.String";
 }

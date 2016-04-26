@@ -30,5 +30,12 @@ public class FieldUtil {
         resonsNode.put(JfuncConstants.LINENUMBER + internalField.getLineNumber(), JfuncConstants.LOGGER);
         return resonsNode;
     }
-
+    
+    public static ObjectNode getReasonsForGlobalFields(InternalFeild internalField) {
+        ObjectMapper mapper = JsonUtils.getObjectMapper();
+        ObjectNode resonsNode = mapper.createObjectNode();
+        resonsNode.put(JfuncConstants.LINENUMBER + internalField.getLineNumber(), JfuncConstants.GLOBAL);
+        return resonsNode;
+    }
+    
 }
