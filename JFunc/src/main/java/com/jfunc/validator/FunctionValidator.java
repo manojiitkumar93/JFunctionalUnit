@@ -73,42 +73,37 @@ public class FunctionValidator implements Validator {
     private ObjectNode getReasons(MethodNode methodNode, boolean skipLogStatements, boolean skipPrintStatements) {
         ObjectMapper mapper = JsonUtils.getObjectMapper();
         ObjectNode objectNode = mapper.createObjectNode();
+        ArrayNode reasonObjectNode = mapper.createArrayNode();
         MethodMetaData methodMetaData = new MethodMetaData(methodNode);
 
         // First check whether method type is "Void"
         if (VoidTypeUtil.isVoid(methodMetaData)) {
-            objectNode.put(JfuncConstants.ISFUNCTIONAL, false);
-            objectNode.set(JfuncConstants.REASONS, VoidTypeUtil.getReasons(methodMetaData));
-            return objectNode;
+            reasonObjectNode.add(VoidTypeUtil.getReasons(methodMetaData));
         }
 
+        // Check for any non final object is accessing in a method
+        if (FieldUtil.doesMethodRefferedObjects(methodMetaData)) {
+            reasonObjectNode.add(FieldUtil.getREasonForRefferedObjects(methodMetaData));
+        }
         // Check for any "Print" and "Log" statements in a method
         if (!(skipPrintStatements && skipLogStatements)) {
-            ArrayNode reasonObjectNode = mapper.createArrayNode();
-            boolean isFunctionSet = false;
             List<InternalFeild> internalFields = methodMetaData.getInternallyRefferedFields();
             for (InternalFeild internalField : internalFields) {
                 if (!skipPrintStatements && FieldUtil.containsPrintStatements(internalField)) {
-                    if (!isFunctionSet) {
-                        objectNode.put(JfuncConstants.ISFUNCTIONAL, false);
-                        isFunctionSet = true;
-                    }
                     reasonObjectNode.add(FieldUtil.getReasonsForPrintStatements(internalField));
                 }
                 if (!skipLogStatements && FieldUtil.containsLogStatements(internalField)) {
-                    if (!isFunctionSet) {
-                        objectNode.put(JfuncConstants.ISFUNCTIONAL, false);
-                        isFunctionSet = true;
-                    }
                     reasonObjectNode.add(FieldUtil.getReasonsForLogStatements(internalField));
                 }
             }
-            if (!isFunctionSet) {
-                objectNode.put(JfuncConstants.ISFUNCTIONAL, true);
-            } else {
-                objectNode.set(JfuncConstants.REASONS, reasonObjectNode);
-            }
         }
+        if (reasonObjectNode.size() > 0) {
+            objectNode.put(JfuncConstants.ISFUNCTIONAL, false);
+            objectNode.set(JfuncConstants.REASONS, reasonObjectNode);
+        } else {
+            objectNode.put(JfuncConstants.ISFUNCTIONAL, true);
+        }
+
         return objectNode;
     }
 
