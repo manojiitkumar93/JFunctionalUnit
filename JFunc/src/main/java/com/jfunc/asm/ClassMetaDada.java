@@ -1,5 +1,6 @@
 package com.jfunc.asm;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,11 +10,13 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import com.jfunc.exception.JfuncException;
 import com.jfunc.validator.JfuncConstants;
 
 
 public class ClassMetaDada {
     private final ClassNode classNode;
+    private final String className;
     private final List<MethodNode> methodNodes;
     private List<MethodMetaData> methodMethodDataList;
     private List<FieldNode> fieldNodes;
@@ -23,8 +26,9 @@ public class ClassMetaDada {
     private List<FieldNode> nonFinalPrivateFeildNodes;
 
     @SuppressWarnings("unchecked")
-    public ClassMetaDada(ClassNode classNode) {
+    public ClassMetaDada(ClassNode classNode) throws JfuncException {
         this.classNode = classNode;
+        this.className = classNode.name;
         this.methodNodes = this.classNode.methods;
         this.fieldNodes = this.classNode.fields;
         finalFieldNodes = getAllFinalFields(fieldNodes);
@@ -55,8 +59,12 @@ public class ClassMetaDada {
                         .collect(Collectors.toList());
     }
     
-    private List<MethodMetaData> getMethodMetaDataList(List<MethodNode> methodNodes){
-        return methodNodes.stream().map(methodNode -> new MethodMetaData(methodNode)).collect(Collectors.toList());
+    private List<MethodMetaData> getMethodMetaDataList(List<MethodNode> methodNodes) throws JfuncException{
+        List<MethodMetaData> methodMetaDataList = new ArrayList<>();
+        for(MethodNode methodNode : methodNodes){
+            methodMetaDataList.add(new MethodMetaData(methodNode, className));
+        }
+        return methodMetaDataList;
     }
     
     public List<FieldNode> getFinalFieldNodes(){

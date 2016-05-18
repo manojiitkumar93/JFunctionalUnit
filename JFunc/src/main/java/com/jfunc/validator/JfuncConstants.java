@@ -10,4 +10,9 @@ public class JfuncConstants {
     public static final String LINENUMBER = "Line : ";
     public static final String STRING_CLASS = "java.lang.String";
     public static final String REFFERED_OBJECT = "refferedObjects";
+    public static final String INITIALIZATION_METHOD = "<init>";
+    public static final String SLASH = "/";
+    public static final String BIN = "bin";
+    public static final String CLASS = ".class";
+    public static final int THREADS = 5;
 }

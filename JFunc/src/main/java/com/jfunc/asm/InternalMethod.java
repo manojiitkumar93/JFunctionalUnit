@@ -54,5 +54,9 @@ public class InternalMethod {
         return Collections.unmodifiableList(argumentTypeList);
     }
 
+    public MethodInsnNode getMethodNode() {
+        return this.methodInsnNode;
+    }
+
 
 }

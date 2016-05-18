@@ -7,7 +7,9 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.FieldInsnNode;
@@ -19,6 +21,10 @@ import org.objectweb.asm.util.Printer;
 import org.objectweb.asm.util.Textifier;
 import org.objectweb.asm.util.TraceMethodVisitor;
 
+import com.jfunc.core.ProjectDetailsProvider;
+import com.jfunc.exception.JfuncException;
+import com.jfunc.validator.JfuncConstants;
+
 public class MethodMetaData {
 
     private static Printer printer = new Textifier();
@@ -27,18 +33,30 @@ public class MethodMetaData {
     private final MethodNode methodNode;
     private final List<String> byteCode;
     private final String returnType;
+    private final String parentClass;
     private final Map<LineNumberNode, List<AbstractInsnNode>> lineToOperationsMap;
-    private final List<InternalMethod> internallyCalledMethods = new ArrayList<>();
     private final List<InternalFeild> internallyRefferedFields = new ArrayList<>();
+    private final List<String> argumentClassNameList;
 
-    public MethodMetaData(MethodNode methodNode) {
+    private final List<InternalMethod> allInternallyCalledMethods = new ArrayList<>();
+    private final List<InternalMethod> classOwnedInternallyCalledMethods = new ArrayList<>();
+    private final List<InternalMethod> projectOwnedInternallyCalledMethods = new ArrayList<>();
+    private final List<InternalMethod> otherInternallyCalledMethods = new ArrayList<>();
+
+    public MethodMetaData(MethodNode methodNode, String parentClass) throws JfuncException {
         this.methodNode = methodNode;
+        this.parentClass = parentClass;
         this.byteCode = generateByteCodeOfMethod(methodNode);
         this.returnType = Type.getReturnType(methodNode.desc).getClassName();
         this.lineToOperationsMap = getLineToOperationsMap(methodNode.instructions);
+        this.argumentClassNameList = getArgumetsClassNames(methodNode);
     }
 
-    public String getMethodNode() {
+    public String getClassName() {
+        return this.parentClass;
+    }
+
+    public String getMethodName() {
         return this.methodNode.name;
     }
 
@@ -54,12 +72,36 @@ public class MethodMetaData {
         return Collections.unmodifiableMap(this.lineToOperationsMap);
     }
 
-    public List<InternalMethod> getInternallyCalledMethods() {
-        return Collections.unmodifiableList(internallyCalledMethods);
+    public List<InternalMethod> getAllInternallyCalledMethods() {
+        return Collections.unmodifiableList(allInternallyCalledMethods);
+    }
+
+    public List<InternalMethod> getClassOwnedInternallyCalledMethods() {
+        return Collections.unmodifiableList(classOwnedInternallyCalledMethods);
+    }
+
+    public List<InternalMethod> getProjectOwnedInternallyCalledMethods() {
+        return Collections.unmodifiableList(projectOwnedInternallyCalledMethods);
+    }
+
+    public List<InternalMethod> getOtherInternallyCalledMethodss() {
+        return Collections.unmodifiableList(otherInternallyCalledMethods);
     }
 
     public List<InternalFeild> getInternallyRefferedFields() {
         return Collections.unmodifiableList(internallyRefferedFields);
+    }
+
+    public List<String> getArgumetsClassName() {
+        return Collections.unmodifiableList(argumentClassNameList);
+    }
+
+    private List<String> getArgumetsClassNames(MethodNode methodNode) {
+        List<String> argumetClassNameList = new ArrayList<>();
+        for (Type type : Type.getArgumentTypes(methodNode.desc)) {
+            argumetClassNameList.add(type.getClassName());
+        }
+        return argumetClassNameList;
     }
 
     private List<String> generateByteCodeOfMethod(MethodNode methodNode) {
@@ -79,7 +121,8 @@ public class MethodMetaData {
         return sw.toString();
     }
 
-    private Map<LineNumberNode, List<AbstractInsnNode>> getLineToOperationsMap(InsnList insList) {
+    private Map<LineNumberNode, List<AbstractInsnNode>> getLineToOperationsMap(InsnList insList) throws JfuncException {
+        ProjectDetailsProvider projectDetaisInstance = ProjectDetailsProvider.getInstance();
         Map<LineNumberNode, List<AbstractInsnNode>> lineToOperationsMap = new LinkedHashMap<>();
         LineNumberNode key = null;
         for (int i = 0; i < insList.size(); i++) {
@@ -93,7 +136,17 @@ public class MethodMetaData {
                         internallyRefferedFields.add(new InternalFeild((FieldInsnNode) insList.get(i), key));
                     }
                     if (insList.get(i) instanceof MethodInsnNode) {
-                        internallyCalledMethods.add(new InternalMethod((MethodInsnNode) insList.get(i), key));
+                        MethodInsnNode methodInsNode = (MethodInsnNode) insList.get(i);
+                        allInternallyCalledMethods.add(new InternalMethod(methodInsNode, key));
+                        Set<String> packageDetailsSet = projectDetaisInstance.getAllClasses();
+                        if (StringUtils.equals(methodInsNode.owner, parentClass)) {
+                            classOwnedInternallyCalledMethods.add(new InternalMethod(methodInsNode, key));
+                        } else if (packageDetailsSet.contains(methodInsNode.owner + JfuncConstants.CLASS)) {
+                            projectOwnedInternallyCalledMethods.add(new InternalMethod(methodInsNode, key));
+                        } else {
+                            otherInternallyCalledMethods.add(new InternalMethod(methodInsNode, key));
+                        }
+
                     }
                 }
             }
