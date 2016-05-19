@@ -11,6 +11,42 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.jfunc.util.JsonUtils;
 import com.jfunc.validator.JfuncConstants;
 
+/**
+ * Constructs a non functionality reasons json.<br>
+ * <br>
+ * {
+  "isFunctional": false,
+  "Reasons": {
+    "package1/class1": {
+      "method1": {
+        "line1": [
+          "reason1",
+          "reason2"
+        ],
+        "line2": [
+          "reason1",
+          "reason2"
+        ]
+      }
+    },
+    "package2/class1": {
+      "method2": {
+        "line1": [
+          "reason1",
+          "reason2"
+        ],
+        "line2": [
+          "reason1",
+          "reason2"
+        ]
+      }
+    }
+  }
+}
+ * 
+ * @author manojk
+ *
+ */
 public class NonFunctionalityReason {
 
     private ObjectMapper mapper = JsonUtils.getObjectMapper();
@@ -24,18 +60,39 @@ public class NonFunctionalityReason {
         return instance;
     }
 
+    /**
+     * Constructs and adds new method object to non functionality reasons json.<br>
+     * <br>
+     *  {
+      "method1": {
+        "line1": [
+          "reason1",
+          "reason2"
+        ],
+        "line2": [
+          "reason1",
+          "reason2"
+        ]
+      }
+    }
+     * 
+     * @param className className to which method belongs
+     * @param methodName method to be added
+     * @param lineToReasonsListMap non functionality reasons map
+     * @param isVoid
+     */
     public void addNewMethod(String className, String methodName, Map<String, List<String>> lineToReasonsListMap,
             boolean isVoid) {
         ObjectNode classNode = (ObjectNode) reasonsNode.get(className);
         if (classNode == null && !methodName.equals(JfuncConstants.INITIALIZATION_METHOD)
                 && !lineToReasonsListMap.isEmpty()) {
-            updatereasonNode(className, methodName, lineToReasonsListMap, isVoid, mapper.createObjectNode());
+            updateReasonNode(className, methodName, lineToReasonsListMap, isVoid, mapper.createObjectNode());
         } else if (!methodName.equals(JfuncConstants.INITIALIZATION_METHOD) && !lineToReasonsListMap.isEmpty()) {
-            updatereasonNode(className, methodName, lineToReasonsListMap, isVoid, classNode);
+            updateReasonNode(className, methodName, lineToReasonsListMap, isVoid, classNode);
         }
     }
 
-    private void updatereasonNode(String className, String methodName, Map<String, List<String>> lineToReasonsListMap,
+    private void updateReasonNode(String className, String methodName, Map<String, List<String>> lineToReasonsListMap,
             boolean isVoid, ObjectNode classNode) {
         ObjectNode lineNode = mapper.createObjectNode();
         Set<Entry<String, List<String>>> elements = lineToReasonsListMap.entrySet();

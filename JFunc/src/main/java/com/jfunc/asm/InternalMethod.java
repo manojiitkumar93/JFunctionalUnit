@@ -10,12 +10,12 @@ import org.objectweb.asm.tree.MethodInsnNode;
 
 public class InternalMethod {
 
-    private MethodInsnNode methodInsnNode;
-    private final LineNumberNode lineNumberNode;
     private final String desc;
     private final String name;
     private final String owner;
     private final String returnType;
+    private MethodInsnNode methodInsnNode;
+    private final LineNumberNode lineNumberNode;
     private final List<String> argumentTypeList = new ArrayList<>();
 
     public InternalMethod(MethodInsnNode methodInsNode, LineNumberNode lineNumberNode) {

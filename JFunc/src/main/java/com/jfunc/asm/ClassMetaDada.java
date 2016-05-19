@@ -13,7 +13,11 @@ import org.objectweb.asm.tree.MethodNode;
 import com.jfunc.exception.JfuncException;
 import com.jfunc.validator.JfuncConstants;
 
-
+/**
+ * Class to store all the required details of a method
+ * @author manojk
+ *
+ */
 public class ClassMetaDada {
     private final ClassNode classNode;
     private final String className;

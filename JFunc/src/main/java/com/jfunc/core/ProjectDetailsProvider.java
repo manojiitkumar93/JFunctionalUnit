@@ -8,14 +8,20 @@ import java.util.Set;
 import com.jfunc.exception.JfuncException;
 import com.jfunc.validator.JfuncConstants;
 
+/**
+ * Class to hold user's project details.
+ * 
+ * @author manojk
+ *
+ */
 public class ProjectDetailsProvider {
+
     private static String projectPath;
     private Set<String> projectSet = new HashSet<>();
     private static ProjectDetailsProvider instance;
 
     private ProjectDetailsProvider() {
         constructAllPackages(new File(projectPath));
-
     }
 
     public static ProjectDetailsProvider getInstance() throws JfuncException {
@@ -28,6 +34,11 @@ public class ProjectDetailsProvider {
         return instance;
     }
 
+    /**
+     * Gets all the package names from the user's project.
+     * 
+     * @param file
+     */
     private void constructAllPackages(File file) {
         if (file.isDirectory()) {
             File[] files = file.listFiles();

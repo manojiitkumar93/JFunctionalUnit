@@ -25,6 +25,12 @@ import com.jfunc.core.ProjectDetailsProvider;
 import com.jfunc.exception.JfuncException;
 import com.jfunc.validator.JfuncConstants;
 
+/**
+ * Class to store all required metadata of a method.
+ * 
+ * @author manojk
+ *
+ */
 public class MethodMetaData {
 
     private static Printer printer = new Textifier();
@@ -38,9 +44,13 @@ public class MethodMetaData {
     private final List<InternalFeild> internallyRefferedFields = new ArrayList<>();
     private final List<String> argumentClassNameList;
 
+    // List of all internally called method
     private final List<InternalMethod> allInternallyCalledMethods = new ArrayList<>();
+    // List of internally called methods related to the class of input method.
     private final List<InternalMethod> classOwnedInternallyCalledMethods = new ArrayList<>();
+    // List of internally called methods related to the user's project.
     private final List<InternalMethod> projectOwnedInternallyCalledMethods = new ArrayList<>();
+    // List of internally called methods related to other dependencies.
     private final List<InternalMethod> otherInternallyCalledMethods = new ArrayList<>();
 
     public MethodMetaData(MethodNode methodNode, String parentClass) throws JfuncException {

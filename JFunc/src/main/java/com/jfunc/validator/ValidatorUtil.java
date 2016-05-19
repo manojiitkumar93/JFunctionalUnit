@@ -11,6 +11,12 @@ import com.jfunc.asm.InternalFeild;
 import com.jfunc.asm.MethodMetaData;
 import com.jfunc.core.NonFunctionalityReason;
 
+/**
+ * Utility class for validating functionality of methods
+ * 
+ * @author manojk
+ *
+ */
 public class ValidatorUtil {
 
     public static NonFunctionalityReason validate(MethodMetaData methodMetaData) {
@@ -22,7 +28,6 @@ public class ValidatorUtil {
         return getReasons(methodMetaData, skipLogStatements, skipPrintStatements);
     }
 
-    // At present we are checking for 1) Void 2) Print-Statements 3) Log-Statements
     private static NonFunctionalityReason getReasons(MethodMetaData methodMetaData, boolean skipLogStatements,
             boolean skipPrintStatements) {
 
@@ -48,9 +53,10 @@ public class ValidatorUtil {
                 }
             }
         }
-        NonFunctionalityReason instance = NonFunctionalityReason.getInstance();
-        instance.addNewMethod(methodMetaData.getClassName(),methodMetaData.getMethodName(), lineToReasonsList, isVoid(methodMetaData));
-        return instance;
+        NonFunctionalityReason nonFunctionalityReasonInstance = NonFunctionalityReason.getInstance();
+        nonFunctionalityReasonInstance.addNewMethod(methodMetaData.getClassName(), methodMetaData.getMethodName(),
+                lineToReasonsList, isVoid(methodMetaData));
+        return nonFunctionalityReasonInstance;
     }
 
     private static void updateLineToReasonsListMap(Map<String, List<String>> lineToReasonsList, String reason,
