@@ -81,7 +81,7 @@ public class NonFunctionalityReason {
      * @param lineToReasonsListMap non functionality reasons map
      * @param isVoid
      */
-    public void addNewMethod(String className, String methodName, Map<String, List<String>> lineToReasonsListMap,
+    public synchronized void addNewMethod(String className, String methodName, Map<String, List<String>> lineToReasonsListMap,
             boolean isVoid) {
         ObjectNode classNode = (ObjectNode) reasonsNode.get(className);
         if (classNode == null && !methodName.equals(JfuncConstants.INITIALIZATION_METHOD)

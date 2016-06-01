@@ -40,7 +40,7 @@ public class ValidatorUtil {
                 updateLineToReasonsListMap(lineToReasonsList, JfuncConstants.REFFERED_OBJECT, internalField);
             }
         }
-
+        
         // Check for any "Print" and "Log" statements in a method
         if (!(skipPrintStatements && skipLogStatements)) {
             List<InternalFeild> internalFields = methodMetaData.getInternallyRefferedFields();

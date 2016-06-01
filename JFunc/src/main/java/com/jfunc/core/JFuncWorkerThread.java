@@ -18,7 +18,6 @@ public class JFuncWorkerThread implements Runnable {
             MethodMetaData methodMetaData = (MethodMetaData) queue.dequeue();
             ValidatorUtil.validate(methodMetaData);
         }
-
     }
 
 }

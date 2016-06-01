@@ -5,7 +5,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
@@ -26,14 +29,18 @@ public class FunctionalityTester {
     private final String projectPath;
     private ClassMetaDada classMetaData;
     private ClassReader classReader = null;
+    // classMetaDataCache is to avoid multiple creation of ClassMetaData for same class
+    private final Map<String, ClassMetaDada> classMetaDataCache = new HashMap<>();
+    // classMethodMetaDataCache is to avoid adding same MethodMetaData more than once in a Queue
+    private final Map<String, List<Integer>> methodMetaDataCache = new HashMap<>();
     private JFuncQueueImpl queue = JFuncQueueImpl.getInstance();
 
     public FunctionalityTester(String path) throws Exception {
-        this.projectPath = filterProjectPath(path);
-        ProjectDetailsProvider.setProjectPath(this.projectPath);
         this.filePath = path;
         File classFile = new File(filePath);
         if (FileUtil.isFileExists(classFile)) {
+            this.projectPath = filterProjectPath(classFile);
+            ProjectDetailsProvider.setProjectPath(this.projectPath);
             classMetaData = constructClassMetaData(classFile);
         } else {
             throw new FileNotFoundException();
@@ -59,11 +66,9 @@ public class FunctionalityTester {
         }
         queue.enqueue(requiredMethod);
         initializeQueue(requiredMethod, classMetaData);
-        NonFunctionalityReason nonFunctionalityReason =
-                ValidatorUtil.validate(requiredMethod, skipLogging, skipPrintStatements);
         JFuncExecutorImpl.getInstnace().startService();
-        return (requiredMethod == null) ? "No method exists with Methtod Name : " + methodName
-                : nonFunctionalityReason.getReasonsJson().toString();
+        NonFunctionalityReason nonFunctionalityReason = NonFunctionalityReason.getInstance();
+        return nonFunctionalityReason.getReasonsJson().toString();
     }
 
     public String testMethod(String methodName) throws Exception {
@@ -96,51 +101,70 @@ public class FunctionalityTester {
                 throw new Exception("Exists two methods which satisfies input arguments");
             }
         }
+        if (requiredMethod == null) {
+            throw new JfuncException("No method exists with Methtod Name : " + methodName);
+        }
         queue.enqueue(requiredMethod);
         initializeQueue(requiredMethod, classMetaData);
-        NonFunctionalityReason nonFunctionalityReason =
-                ValidatorUtil.validate(requiredMethod, skipLogging, skipPrintStatements);
         JFuncExecutorImpl.getInstnace().startService();
-        return (requiredMethod == null) ? "No method exists with Methtod Name : " + methodName
-                + " or method does not exists with Argumnets : " + argumentTypes
-                : nonFunctionalityReason.getReasonsJson().toString();
+        NonFunctionalityReason nonFunctionalityReason = NonFunctionalityReason.getInstance();
+        return nonFunctionalityReason.getReasonsJson().toString();
     }
 
     public String testMethod(String methodName, List<String> argumentTypes) throws Exception {
         return testMethod(methodName, argumentTypes, false, false);
     }
 
+    /**
+     * A recursive method to add all the internally called methods to {@link JFuncQueueImpl} by
+     * 
+     * @param requiredMethod
+     * @param classMetaData
+     * @throws JfuncException
+     */
     private void initializeQueue(MethodMetaData requiredMethod, ClassMetaDada classMetaData) throws JfuncException {
+
         List<InternalMethod> internallyCalledLocalMethods = requiredMethod.getClassOwnedInternallyCalledMethods();
         List<MethodMetaData> methodMethodDataList = classMetaData.getMethodMetadaList();
+
         for (MethodMetaData methodMetaData : methodMethodDataList) {
             for (InternalMethod internalMethod : internallyCalledLocalMethods) {
-                if (checkForMethodMatch(internalMethod, methodMetaData)) {
+                if (checkForMethodMatch(internalMethod, methodMetaData)
+                        && !checkIfMethodMetaDataIsAlreadyAddedInQueue(classMetaData, methodMetaData)) {
                     // add this methodMetada in queue
                     queue.enqueue(methodMetaData);
+                    // there is a chance where this method may call some other methods
+                    initializeQueue(methodMetaData, classMetaData);
                     break;
                 }
             }
         }
+
         List<InternalMethod> projectOwnedMethods = requiredMethod.getProjectOwnedInternallyCalledMethods();
         for (InternalMethod internalMethod : projectOwnedMethods) {
-            String classFilePath = projectPath + internalMethod.getOwner() + JfuncConstants.CLASS;
-            File classFile = new File(classFilePath);
-            if (FileUtil.isFileExists(classFile)) {
-                ClassMetaDada newClassMetaData = constructClassMetaData(classFile);
+            String className = internalMethod.getOwner() + JfuncConstants.CLASS;
+            ClassMetaDada newClassMetaData = checkAndConstructClassMetaData(className);
+            if (newClassMetaData != null) {
                 List<MethodMetaData> newMethodMethodDataList = newClassMetaData.getMethodMetadaList();
                 for (MethodMetaData methodMetaData : newMethodMethodDataList) {
-                    if (checkForMethodMatch(internalMethod, methodMetaData)) {
-                        queue.enqueue(methodMetaData);
+                    if (checkForMethodMatch(internalMethod, methodMetaData)
+                            && !checkIfMethodMetaDataIsAlreadyAddedInQueue(classMetaData, methodMetaData)) {
                         // add this methodMetada in queue
+                        queue.enqueue(methodMetaData);
                         initializeQueue(methodMetaData, classMetaData);
                     }
                 }
             }
-
         }
     }
 
+    /**
+     * Checks whether provided {@link InternalMethod} matches with {@link MethodMetaData}
+     * 
+     * @param internalMethod
+     * @param methodMetaData
+     * @return
+     */
     private boolean checkForMethodMatch(InternalMethod internalMethod, MethodMetaData methodMetaData) {
         String internalMethodName = internalMethod.getName();
         String methodMetaDataName = methodMetaData.getMethodName();
@@ -148,6 +172,39 @@ public class FunctionalityTester {
         List<String> methodMetaDataArgumentTypes = methodMetaData.getArgumetsClassName();
         return (internalMethodName.equals(methodMetaDataName)
                 && internalMethodArgumetTypes.equals(methodMetaDataArgumentTypes)) ? true : false;
+    }
+
+    /**
+     * Checks whether {@link MethodMetaData} already added to the queue
+     * 
+     * @param classMetaData
+     * @param methodMetaData
+     * @return
+     */
+    private boolean checkIfMethodMetaDataIsAlreadyAddedInQueue(ClassMetaDada classMetaData,
+            MethodMetaData methodMetaData) {
+        // we are using method name and method params to create an hashcode because there may be
+        // overloaded methods. And one overloaded method can internally call other overloaded
+        // method
+        int methodMetaDataHashKey =
+                (methodMetaData.getMethodName() + methodMetaData.getMethodReturnType().toString()).hashCode();
+        boolean contains = false;
+        String classMetaDataName = classMetaData.getName();
+        if (methodMetaDataCache.containsKey(classMetaDataName)) {
+            List<Integer> methodMetaDataKeys = methodMetaDataCache.get(classMetaDataName);
+            if (!methodMetaDataKeys.contains(methodMetaDataHashKey)) {
+                // if does not contains add this to the list
+                methodMetaDataKeys.add(methodMetaDataHashKey);
+            } else {
+                contains = true;
+            }
+        } else {
+            // methodMetaDataCache does not contain classMetaData then add to it
+            List<Integer> methodMetaDataKeys = new ArrayList<>();
+            methodMetaDataKeys.add(methodMetaDataHashKey);
+            methodMetaDataCache.put(classMetaDataName, methodMetaDataKeys);
+        }
+        return contains;
     }
 
     private ClassMetaDada constructClassMetaData(File classFile) throws JfuncException {
@@ -161,16 +218,25 @@ public class FunctionalityTester {
         return new ClassMetaDada(classNode);
     }
 
-    private String filterProjectPath(String filePath) {
-        String[] strings = filePath.split(JfuncConstants.SLASH);
-        StringBuilder builder = new StringBuilder();
-        for (String string : strings) {
-            builder.append(string).append(JfuncConstants.SLASH);
-            if (string.equals(JfuncConstants.BIN)) {
-                break;
-            }
-        }
-        return builder.toString();
+    private String filterProjectPath(File filePath) {
+        String absolutePath = filePath.getAbsolutePath();
+        String fileName = filePath.getName();
+        String projectPath = absolutePath.substring(0, absolutePath.length() - fileName.length());
+        return projectPath;
     }
 
+    private ClassMetaDada checkAndConstructClassMetaData(String classMetaDataName) throws JfuncException {
+        ClassMetaDada requiredClassMetaData = null;
+        String classFilePath = ClassLoader.getSystemClassLoader().getResource(classMetaDataName).toString();
+        classFilePath = classFilePath.replace("file:", "");
+        if (classMetaDataCache.containsKey(classMetaDataName)) {
+            requiredClassMetaData = classMetaDataCache.get(classMetaDataName);
+        }
+        File classFile = new File(classFilePath);
+        if (FileUtil.isFileExists(classFile)) {
+            requiredClassMetaData = constructClassMetaData(classFile);
+            classMetaDataCache.put(classMetaDataName, requiredClassMetaData);
+        }
+        return requiredClassMetaData;
+    }
 }

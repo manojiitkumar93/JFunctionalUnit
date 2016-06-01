@@ -147,14 +147,18 @@ public class MethodMetaData {
                     }
                     if (insList.get(i) instanceof MethodInsnNode) {
                         MethodInsnNode methodInsNode = (MethodInsnNode) insList.get(i);
-                        allInternallyCalledMethods.add(new InternalMethod(methodInsNode, key));
-                        Set<String> packageDetailsSet = projectDetaisInstance.getAllClasses();
-                        if (StringUtils.equals(methodInsNode.owner, parentClass)) {
-                            classOwnedInternallyCalledMethods.add(new InternalMethod(methodInsNode, key));
-                        } else if (packageDetailsSet.contains(methodInsNode.owner + JfuncConstants.CLASS)) {
-                            projectOwnedInternallyCalledMethods.add(new InternalMethod(methodInsNode, key));
-                        } else {
-                            otherInternallyCalledMethods.add(new InternalMethod(methodInsNode, key));
+                        // we wont care for the constructors (Constructors also be MethodInsnNode
+                        // with method name <init>)
+                        if (!methodInsNode.name.equals(JfuncConstants.INITIALIZATION_METHOD)) {
+                            allInternallyCalledMethods.add(new InternalMethod(methodInsNode, key));
+                            Set<String> packageDetailsSet = projectDetaisInstance.getAllClasses();
+                            if (StringUtils.equals(methodInsNode.owner, parentClass)) {
+                                classOwnedInternallyCalledMethods.add(new InternalMethod(methodInsNode, key));
+                            } else if (packageDetailsSet.contains(methodInsNode.owner + JfuncConstants.CLASS)) {
+                                projectOwnedInternallyCalledMethods.add(new InternalMethod(methodInsNode, key));
+                            } else {
+                                otherInternallyCalledMethods.add(new InternalMethod(methodInsNode, key));
+                            }
                         }
 
                     }

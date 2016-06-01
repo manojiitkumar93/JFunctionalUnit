@@ -22,7 +22,8 @@ public class ClassMetaDada {
     private final ClassNode classNode;
     private final String className;
     private final List<MethodNode> methodNodes;
-    private List<MethodMetaData> methodMethodDataList;
+    private List<MethodMetaData> methodMethodDataList = new ArrayList<>();;
+    private List<MethodMetaData> constructorMethodDataList = new ArrayList<>();
     private List<FieldNode> fieldNodes;
     private List<FieldNode> finalFieldNodes;
     private List<FieldNode> nonFinalPublicFieldNodes;
@@ -38,7 +39,7 @@ public class ClassMetaDada {
         finalFieldNodes = getAllFinalFields(fieldNodes);
         nonFinalPublicFieldNodes = getAllNonFinalPublicFields(fieldNodes);
         finalPrimitiveAndStringFieldNodes = getAllFinalPrimitiveAndStringFields(fieldNodes);
-        methodMethodDataList = getMethodMetaDataList(methodNodes);
+        createConstructorAndMethodMetaDataList(methodNodes);
         nonFinalPrivateFeildNodes = getAllNonFinalPrivateFields(fieldNodes);
     }
 
@@ -63,12 +64,15 @@ public class ClassMetaDada {
                         .collect(Collectors.toList());
     }
     
-    private List<MethodMetaData> getMethodMetaDataList(List<MethodNode> methodNodes) throws JfuncException{
-        List<MethodMetaData> methodMetaDataList = new ArrayList<>();
+    private void createConstructorAndMethodMetaDataList(List<MethodNode> methodNodes) throws JfuncException{
         for(MethodNode methodNode : methodNodes){
-            methodMetaDataList.add(new MethodMetaData(methodNode, className));
+            if(methodNode.name.equals(JfuncConstants.INITIALIZATION_METHOD)){
+                constructorMethodDataList.add(new MethodMetaData(methodNode, className));
+            }
+            else{
+                methodMethodDataList.add(new MethodMetaData(methodNode, className));
+            }
         }
-        return methodMetaDataList;
     }
     
     public List<FieldNode> getFinalFieldNodes(){
@@ -89,6 +93,10 @@ public class ClassMetaDada {
     
     public List<MethodMetaData> getMethodMetadaList(){
         return methodMethodDataList;
+    }
+    
+    public String getName(){
+        return className;
     }
     
 }
