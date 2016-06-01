@@ -13,6 +13,9 @@ public class JfuncConstants {
     public static final String INITIALIZATION_METHOD = "<init>";
     public static final String SLASH = "/";
     public static final String BIN = "bin";
+    public static final String BUILD = "build";
     public static final String CLASS = ".class";
+    public static final String FILE = "file:";
+    public static final String EMPTY_STRING = "";
     public static final int THREADS = 5;
 }

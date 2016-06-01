@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,21 +30,23 @@ public class FunctionalityTester {
     private final String projectPath;
     private ClassMetaDada classMetaData;
     private ClassReader classReader = null;
+    private ClassLoader classLoader = ClassLoader.getSystemClassLoader();
     // classMetaDataCache is to avoid multiple creation of ClassMetaData for same class
     private final Map<String, ClassMetaDada> classMetaDataCache = new HashMap<>();
     // classMethodMetaDataCache is to avoid adding same MethodMetaData more than once in a Queue
     private final Map<String, List<Integer>> methodMetaDataCache = new HashMap<>();
     private JFuncQueueImpl queue = JFuncQueueImpl.getInstance();
 
-    public FunctionalityTester(String path) throws Exception {
-        this.filePath = path;
-        File classFile = new File(filePath);
-        if (FileUtil.isFileExists(classFile)) {
-            this.projectPath = filterProjectPath(classFile);
-            ProjectDetailsProvider.setProjectPath(this.projectPath);
-            classMetaData = constructClassMetaData(classFile);
-        } else {
+    public FunctionalityTester(String packagePath) throws Exception {
+        URL filePath = classLoader.getResource(packagePath);
+        if (filePath == null) {
             throw new FileNotFoundException();
+        } else {
+            this.filePath = filePath.toString().replace(JfuncConstants.FILE, JfuncConstants.EMPTY_STRING);
+            File file = new File(this.filePath);
+            this.projectPath = filterProjectPath(file);
+            ProjectDetailsProvider.setProjectPath(this.projectPath);
+            classMetaData = constructClassMetaData(file);
         }
     }
 
@@ -217,18 +220,24 @@ public class FunctionalityTester {
         classReader.accept(classNode, 0);
         return new ClassMetaDada(classNode);
     }
-
+    
     private String filterProjectPath(File filePath) {
         String absolutePath = filePath.getAbsolutePath();
-        String fileName = filePath.getName();
-        String projectPath = absolutePath.substring(0, absolutePath.length() - fileName.length());
-        return projectPath;
+        String[] strings = absolutePath.split(JfuncConstants.SLASH);
+        StringBuilder builder = new StringBuilder();
+        for (String string : strings) {
+            builder.append(string).append(JfuncConstants.SLASH);
+            if (string.equals(JfuncConstants.BIN) || string.equals(JfuncConstants.BUILD)) {
+                break;
+            }
+        }
+        return builder.toString();
     }
 
     private ClassMetaDada checkAndConstructClassMetaData(String classMetaDataName) throws JfuncException {
         ClassMetaDada requiredClassMetaData = null;
-        String classFilePath = ClassLoader.getSystemClassLoader().getResource(classMetaDataName).toString();
-        classFilePath = classFilePath.replace("file:", "");
+        String classFilePath = classLoader.getResource(classMetaDataName).toString();
+        classFilePath = classFilePath.replace(JfuncConstants.FILE, JfuncConstants.EMPTY_STRING);
         if (classMetaDataCache.containsKey(classMetaDataName)) {
             requiredClassMetaData = classMetaDataCache.get(classMetaDataName);
         }

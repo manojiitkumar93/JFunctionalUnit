@@ -14,35 +14,9 @@ import com.jfunc.validator.JfuncConstants;
 /**
  * Constructs a non functionality reasons json.<br>
  * <br>
- * {
-  "isFunctional": false,
-  "Reasons": {
-    "package1/class1": {
-      "method1": {
-        "line1": [
-          "reason1",
-          "reason2"
-        ],
-        "line2": [
-          "reason1",
-          "reason2"
-        ]
-      }
-    },
-    "package2/class1": {
-      "method2": {
-        "line1": [
-          "reason1",
-          "reason2"
-        ],
-        "line2": [
-          "reason1",
-          "reason2"
-        ]
-      }
-    }
-  }
-}
+ * { "isFunctional": false, "Reasons": { "package1/class1": { "method1": { "line1": [ "reason1",
+ * "reason2" ], "line2": [ "reason1", "reason2" ] } }, "package2/class1": { "method2": { "line1": [
+ * "reason1", "reason2" ], "line2": [ "reason1", "reason2" ] } } } }
  * 
  * @author manojk
  *
@@ -63,31 +37,19 @@ public class NonFunctionalityReason {
     /**
      * Constructs and adds new method object to non functionality reasons json.<br>
      * <br>
-     *  {
-      "method1": {
-        "line1": [
-          "reason1",
-          "reason2"
-        ],
-        "line2": [
-          "reason1",
-          "reason2"
-        ]
-      }
-    }
+     * { "method1": { "line1": [ "reason1", "reason2" ], "line2": [ "reason1", "reason2" ] } }
      * 
      * @param className className to which method belongs
      * @param methodName method to be added
      * @param lineToReasonsListMap non functionality reasons map
      * @param isVoid
      */
-    public synchronized void addNewMethod(String className, String methodName, Map<String, List<String>> lineToReasonsListMap,
-            boolean isVoid) {
+    public synchronized void addNewMethod(String className, String methodName,
+            Map<String, List<String>> lineToReasonsListMap, boolean isVoid) {
         ObjectNode classNode = (ObjectNode) reasonsNode.get(className);
-        if (classNode == null && !methodName.equals(JfuncConstants.INITIALIZATION_METHOD)
-                && !lineToReasonsListMap.isEmpty()) {
+        if (classNode == null && !methodName.equals(JfuncConstants.INITIALIZATION_METHOD)) {
             updateReasonNode(className, methodName, lineToReasonsListMap, isVoid, mapper.createObjectNode());
-        } else if (!methodName.equals(JfuncConstants.INITIALIZATION_METHOD) && !lineToReasonsListMap.isEmpty()) {
+        } else if (!methodName.equals(JfuncConstants.INITIALIZATION_METHOD)) {
             updateReasonNode(className, methodName, lineToReasonsListMap, isVoid, classNode);
         }
     }
@@ -95,16 +57,18 @@ public class NonFunctionalityReason {
     private void updateReasonNode(String className, String methodName, Map<String, List<String>> lineToReasonsListMap,
             boolean isVoid, ObjectNode classNode) {
         ObjectNode lineNode = mapper.createObjectNode();
-        Set<Entry<String, List<String>>> elements = lineToReasonsListMap.entrySet();
-        for (Entry<String, List<String>> element : elements) {
-            ArrayNode reasons = mapper.createArrayNode();
-            List<String> reasonsList = (List<String>) element.getValue();
-            for (String reason : reasonsList) {
-                reasons.add(reason);
-            }
-            lineNode.set(element.getKey(), reasons);
-            if (isVoid) {
-                lineNode.put(JfuncConstants.METHODRETURNTYPE, JfuncConstants.VOID);
+        if (isVoid) {
+            lineNode.put(JfuncConstants.METHODRETURNTYPE, JfuncConstants.VOID);
+        }
+        if (!lineToReasonsListMap.isEmpty()) {
+            Set<Entry<String, List<String>>> elements = lineToReasonsListMap.entrySet();
+            for (Entry<String, List<String>> element : elements) {
+                ArrayNode reasons = mapper.createArrayNode();
+                List<String> reasonsList = (List<String>) element.getValue();
+                for (String reason : reasonsList) {
+                    reasons.add(reason);
+                }
+                lineNode.set(element.getKey(), reasons);
             }
         }
         classNode.set(methodName, lineNode);
