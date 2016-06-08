@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,10 +96,14 @@ public class FunctionalityTester {
         List<MethodMetaData> methodMethodDataList = classMetaData.getMethodMetadaList();
         MethodMetaData requiredMethod = null;
         for (MethodMetaData methodMetaData : methodMethodDataList) {
-            if (methodMetaData.getMethodName().equals(methodName)
-                    && argumentTypes.equals(methodMetaData.getArgumetsClassName())) {
-                requiredMethod = methodMetaData;
-                count = count + 1;
+            if (methodMetaData.getMethodName().equals(methodName)) {
+                List<String> methodMetaDataArgumentTypes = methodMetaData.getArgumetsClassName();
+                Collections.sort(methodMetaDataArgumentTypes);
+                Collections.sort(argumentTypes);
+                if (argumentTypes.equals(methodMetaDataArgumentTypes)) {
+                    requiredMethod = methodMetaData;
+                    count = count + 1;
+                }
             }
             if (count > 1) {
                 throw new Exception("Exists two methods which satisfies input arguments");
@@ -210,6 +215,13 @@ public class FunctionalityTester {
         return contains;
     }
 
+    /**
+     * Constructs a {@link ClassMetaDada} object for the input class
+     * 
+     * @param classFile
+     * @return {@link ClassMetaDada}
+     * @throws JfuncException
+     */
     private ClassMetaDada constructClassMetaData(File classFile) throws JfuncException {
         try (InputStream fileStream = new FileInputStream(classFile)) {
             classReader = new ClassReader(fileStream);
@@ -220,7 +232,22 @@ public class FunctionalityTester {
         classReader.accept(classNode, 0);
         return new ClassMetaDada(classNode);
     }
-    
+
+    /**
+     * Filters the project path.<br>
+     * <br>
+     * <b>Example:</b> If input file path is
+     * <ul>
+     * <li>"/home/user/Project/build/classes/test/com/jfunc/validator/SomeClass.class"</li>
+     * <li>"/home/user/Project/bin/functionalExamples/SomeClass.class"</li>
+     * </ul>
+     * returns Project path as <b>"/home/user/Project/build/"</b> or
+     * <b>"/home/user/Project/bin/"</b>
+     * 
+     * 
+     * @param filePath
+     * @return
+     */
     private String filterProjectPath(File filePath) {
         String absolutePath = filePath.getAbsolutePath();
         String[] strings = absolutePath.split(JfuncConstants.SLASH);
@@ -234,6 +261,14 @@ public class FunctionalityTester {
         return builder.toString();
     }
 
+    /**
+     * Check whether if a {@link ClassMetaDada} object is already constructed for a respective class
+     * if not constructs a new
+     * 
+     * @param className
+     * @return {@link ClassMetaDada}
+     * @throws JfuncException
+     */
     private ClassMetaDada checkAndConstructClassMetaData(String classMetaDataName) throws JfuncException {
         ClassMetaDada requiredClassMetaData = null;
         String classFilePath = classLoader.getResource(classMetaDataName).toString();
