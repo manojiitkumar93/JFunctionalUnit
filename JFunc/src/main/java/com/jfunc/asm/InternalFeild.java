@@ -5,11 +5,11 @@ import org.objectweb.asm.tree.LineNumberNode;
 
 public class InternalFeild {
 
-    private final FieldInsnNode fieldInsnNode;
-    private final LineNumberNode lineNumberNode;
     private final String owner;
     private final String description;
     private final String name;
+    private final FieldInsnNode fieldInsnNode;
+    private final LineNumberNode lineNumberNode;
 
     public InternalFeild(FieldInsnNode feildInsNode, LineNumberNode lineNumberNode) {
         this.fieldInsnNode = feildInsNode;
