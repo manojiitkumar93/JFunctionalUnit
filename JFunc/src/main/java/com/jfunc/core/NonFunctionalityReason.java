@@ -71,8 +71,10 @@ public class NonFunctionalityReason {
                 lineNode.set(element.getKey(), reasons);
             }
         }
-        classNode.set(methodName, lineNode);
-        reasonsNode.set(className, classNode);
+        if (lineNode.size() > 0) {
+            classNode.set(methodName, lineNode);
+            reasonsNode.set(className, classNode);
+        }
     }
 
     public ObjectNode getReasonsJson() {

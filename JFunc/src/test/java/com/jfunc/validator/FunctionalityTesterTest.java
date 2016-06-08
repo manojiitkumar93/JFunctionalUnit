@@ -29,7 +29,7 @@ public class FunctionalityTesterTest {
         JsonNode reasonsNode = mapper.readTree(reasonsString);
         assertEquals("false", reasonsNode.get(JfuncConstants.ISFUNCTIONAL).toString());
         ObjectNode node = (ObjectNode) reasonsNode.get("Reasons");
-        assertEquals(3, node.get("com/jfunc/validator/Example1").size());
+        assertEquals(2, node.get("com/jfunc/validator/Example1").size());
 
     }
 }

@@ -1,13 +1,11 @@
 package com.jfunc.validator;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Example1 {
 
     private final int x = 10;
-    private List<String> list = new ArrayList<>();
 
     public Person example(int input, List<String> person1) throws IOException {
         example1(input);
@@ -22,11 +20,11 @@ public class Example1 {
         person.setAge(person.getAge() + input);
     }
 
-    public Person example1(int input) {
-        list.add("name");
-        Person person = new Person(input, "name");
-        person.setAge(person.getAge() + input);
-        return person;
+    public int example1(int input) {
+        // list.add("name");
+        // Person person = new Person(input, "name");
+        // person.setAge(person.getAge() + input);
+        return input;
     }
 
 
