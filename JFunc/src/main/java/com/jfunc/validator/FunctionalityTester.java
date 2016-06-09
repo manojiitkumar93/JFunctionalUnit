@@ -68,7 +68,7 @@ public class FunctionalityTester {
         if (requiredMethod == null) {
             throw new JfuncException("No method exists with Methtod Name : " + methodName);
         }
-        queue.enqueue(requiredMethod);
+        queue.enqueue(new RequirementsWrapper(requiredMethod, skipLogging, skipPrintStatements));
         initializeQueue(requiredMethod, classMetaData);
         JFuncExecutorImpl.getInstnace().startService();
         NonFunctionalityReason nonFunctionalityReason = NonFunctionalityReason.getInstance();
@@ -140,7 +140,7 @@ public class FunctionalityTester {
                 if (checkForMethodMatch(internalMethod, methodMetaData)
                         && !checkIfMethodMetaDataIsAlreadyAddedInQueue(classMetaData, methodMetaData)) {
                     // add this methodMetada in queue
-                    queue.enqueue(methodMetaData);
+                    queue.enqueue(new RequirementsWrapper(methodMetaData, false, false));
                     // there is a chance where this method may call some other methods
                     initializeQueue(methodMetaData, classMetaData);
                     break;
@@ -158,7 +158,7 @@ public class FunctionalityTester {
                     if (checkForMethodMatch(internalMethod, methodMetaData)
                             && !checkIfMethodMetaDataIsAlreadyAddedInQueue(classMetaData, methodMetaData)) {
                         // add this methodMetada in queue
-                        queue.enqueue(methodMetaData);
+                        queue.enqueue(new RequirementsWrapper(methodMetaData, false, false));
                         initializeQueue(methodMetaData, classMetaData);
                     }
                 }

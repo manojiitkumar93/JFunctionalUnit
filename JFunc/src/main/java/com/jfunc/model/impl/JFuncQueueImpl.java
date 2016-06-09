@@ -3,13 +3,13 @@ package com.jfunc.model.impl;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.jfunc.asm.MethodMetaData;
 import com.jfunc.model.JFuncQueue;
+import com.jfunc.validator.RequirementsWrapper;
 
 public class JFuncQueueImpl implements JFuncQueue {
 
     private static JFuncQueueImpl instance = new JFuncQueueImpl();
-    private BlockingQueue<MethodMetaData> functionalityTesterQueue = new LinkedBlockingQueue<MethodMetaData>();
+    private BlockingQueue<RequirementsWrapper> functionalityTesterQueue = new LinkedBlockingQueue<RequirementsWrapper>();
 
     public static JFuncQueueImpl getInstance() {
         return instance;
@@ -20,13 +20,13 @@ public class JFuncQueueImpl implements JFuncQueue {
         if (object == null) {
             throw new IllegalArgumentException("Null object cannot be added");
         }
-        MethodMetaData tester = (MethodMetaData) object;
+        RequirementsWrapper tester = (RequirementsWrapper) object;
         functionalityTesterQueue.add(tester);
     }
 
     @Override
     public Object dequeue() {
-        MethodMetaData tester = null;
+        RequirementsWrapper tester = null;
         try {
             tester = functionalityTesterQueue.take();
         } catch (InterruptedException e) {

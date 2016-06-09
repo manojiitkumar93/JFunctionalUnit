@@ -23,7 +23,7 @@ public class FunctionalityTesterTest {
     @Test
     public void test() throws Exception {
         ObjectMapper mapper = JsonUtils.getObjectMapper();
-        String reasonsString = functionalityTester.testMethod("example");
+        String reasonsString = functionalityTester.testMethod("example", false, false);
         System.out.println(reasonsString);
         assertNotNull(reasonsString);
         JsonNode reasonsNode = mapper.readTree(reasonsString);

@@ -1,7 +1,7 @@
 package com.jfunc.core;
 
-import com.jfunc.asm.MethodMetaData;
 import com.jfunc.model.impl.JFuncQueueImpl;
+import com.jfunc.validator.RequirementsWrapper;
 import com.jfunc.validator.ValidatorUtil;
 
 public class JFuncWorkerThread implements Runnable {
@@ -15,8 +15,9 @@ public class JFuncWorkerThread implements Runnable {
     @Override
     public void run() {
         while (!queue.isEmpty()) {
-            MethodMetaData methodMetaData = (MethodMetaData) queue.dequeue();
-            ValidatorUtil.validate(methodMetaData);
+            RequirementsWrapper requirementsWrapper = (RequirementsWrapper) queue.dequeue();
+            ValidatorUtil.validate(requirementsWrapper.getClassMetaData(), requirementsWrapper.skipLogStatements(),
+                    requirementsWrapper.skipPrintStatements());
         }
     }
 
