@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,8 +97,6 @@ public class FunctionalityTester {
         for (MethodMetaData methodMetaData : methodMethodDataList) {
             if (methodMetaData.getMethodName().equals(methodName)) {
                 List<String> methodMetaDataArgumentTypes = methodMetaData.getArgumetsClassName();
-                Collections.sort(methodMetaDataArgumentTypes);
-                Collections.sort(argumentTypes);
                 if (argumentTypes.equals(methodMetaDataArgumentTypes)) {
                     requiredMethod = methodMetaData;
                     count = count + 1;
@@ -112,7 +109,7 @@ public class FunctionalityTester {
         if (requiredMethod == null) {
             throw new JfuncException("No method exists with Methtod Name : " + methodName);
         }
-        queue.enqueue(requiredMethod);
+        queue.enqueue(new RequirementsWrapper(requiredMethod, skipLogging, skipPrintStatements));
         initializeQueue(requiredMethod, classMetaData);
         JFuncExecutorImpl.getInstnace().startService();
         NonFunctionalityReason nonFunctionalityReason = NonFunctionalityReason.getInstance();

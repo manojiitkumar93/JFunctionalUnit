@@ -15,7 +15,7 @@ public class Example1 {
         incrementAge(person, p);
         return person;
     }
-
+    
     private void incrementAge(Person person, int input) {
         person.setAge(person.getAge() + input);
     }
