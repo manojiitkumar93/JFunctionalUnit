@@ -1,6 +1,7 @@
 package com.jfunc.validator;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -8,6 +9,8 @@ public class Example1 {
 
     private static Logger logger = Logger.getLogger("Logger");
     private final int x = 10;
+    private final List<Integer> listOfNumbers = new ArrayList<>();
+    private int y = 10;
 
     public int method1(int input) {
         System.out.println(input);
@@ -31,10 +34,26 @@ public class Example1 {
     }
 
     public int method5(int input) {
-        //method1(input);
+        // method1(input);
         method2(input);
         Example3.print(input);
         Example2.method(input);
+        return input;
+    }
+
+    public int method6(int input) {
+        input = input + x;
+        return input;
+
+    }
+
+    public int method7(int input) {
+        listOfNumbers.add(input);
+        return input;
+    }
+
+    public int method8(int input) {
+        input = input + y;
         return input;
     }
 
