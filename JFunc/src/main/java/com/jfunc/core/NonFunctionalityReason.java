@@ -26,13 +26,8 @@ public class NonFunctionalityReason {
     private ObjectMapper mapper = JsonUtils.getObjectMapper();
     private ObjectNode objectNode = mapper.createObjectNode();
     private ObjectNode reasonsNode = mapper.createObjectNode();
-    private static NonFunctionalityReason instance = new NonFunctionalityReason();
 
-    private NonFunctionalityReason() {}
-
-    public static NonFunctionalityReason getInstance() {
-        return instance;
-    }
+    public NonFunctionalityReason() {}
 
     /**
      * Constructs and adds new method object to non functionality reasons json.<br>

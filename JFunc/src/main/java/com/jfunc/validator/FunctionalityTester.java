@@ -31,10 +31,6 @@ public class FunctionalityTester {
     private ClassMetaDada classMetaData;
     private ClassReader classReader = null;
     private ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-    // classMetaDataCache is to avoid multiple creation of ClassMetaData for same class
-    private final Map<String, ClassMetaDada> classMetaDataCache = new HashMap<>();
-    // classMethodMetaDataCache is to avoid adding same MethodMetaData more than once in a Queue
-    private final Map<String, List<Integer>> methodMetaDataCache = new HashMap<>();
     private JFuncQueueImpl queue = JFuncQueueImpl.getInstance();
 
     public FunctionalityTester(String packagePath) throws Exception {
@@ -53,6 +49,12 @@ public class FunctionalityTester {
     public String testMethod(String methodName, boolean skipLogging, boolean skipPrintStatements)
             throws JfuncException {
         int count = 0;
+
+        // classMethodMetaDataCache is to avoid adding same MethodMetaData more than once in a Queue
+        Map<String, List<Integer>> methodMetaDataCache = new HashMap<>();
+        // classMetaDataCache is to avoid multiple creation of ClassMetaData for same class
+        Map<String, ClassMetaDada> classMetaDataCache = new HashMap<>();
+
         List<MethodMetaData> methodMethodDataList = classMetaData.getMethodMetadaList();
         MethodMetaData requiredMethod = null;
         for (MethodMetaData methodMetaData : methodMethodDataList) {
@@ -68,9 +70,9 @@ public class FunctionalityTester {
             throw new JfuncException("No method exists with Methtod Name : " + methodName);
         }
         queue.enqueue(new RequirementsWrapper(requiredMethod, skipLogging, skipPrintStatements));
-        initializeQueue(requiredMethod, classMetaData);
-        JFuncExecutorImpl.getInstnace().startService();
-        NonFunctionalityReason nonFunctionalityReason = NonFunctionalityReason.getInstance();
+        initializeQueue(requiredMethod, classMetaData, methodMetaDataCache, classMetaDataCache);
+        NonFunctionalityReason nonFunctionalityReason = new NonFunctionalityReason();
+        JFuncExecutorImpl.getInstnace().startService(queue, nonFunctionalityReason);
         return nonFunctionalityReason.getReasonsJson().toString();
     }
 
@@ -92,6 +94,12 @@ public class FunctionalityTester {
     public String testMethod(String methodName, List<String> argumentTypes, boolean skipLogging,
             boolean skipPrintStatements) throws Exception {
         int count = 0;
+
+        // classMethodMetaDataCache is to avoid adding same MethodMetaData more than once in a Queue
+        Map<String, List<Integer>> methodMetaDataCache = new HashMap<>();
+        // classMetaDataCache is to avoid multiple creation of ClassMetaData for same class
+        Map<String, ClassMetaDada> classMetaDataCache = new HashMap<>();
+
         List<MethodMetaData> methodMethodDataList = classMetaData.getMethodMetadaList();
         MethodMetaData requiredMethod = null;
         for (MethodMetaData methodMetaData : methodMethodDataList) {
@@ -110,9 +118,10 @@ public class FunctionalityTester {
             throw new JfuncException("No method exists with Methtod Name : " + methodName);
         }
         queue.enqueue(new RequirementsWrapper(requiredMethod, skipLogging, skipPrintStatements));
-        initializeQueue(requiredMethod, classMetaData);
-        JFuncExecutorImpl.getInstnace().startService();
-        NonFunctionalityReason nonFunctionalityReason = NonFunctionalityReason.getInstance();
+        initializeQueue(requiredMethod, classMetaData, methodMetaDataCache, classMetaDataCache);
+        System.out.println("Queue Size" + queue.size());
+        NonFunctionalityReason nonFunctionalityReason = new NonFunctionalityReason();
+        JFuncExecutorImpl.getInstnace().startService(queue, nonFunctionalityReason);
         return nonFunctionalityReason.getReasonsJson().toString();
     }
 
@@ -127,19 +136,20 @@ public class FunctionalityTester {
      * @param classMetaData
      * @throws JfuncException
      */
-    private void initializeQueue(MethodMetaData requiredMethod, ClassMetaDada classMetaData) throws JfuncException {
-
+    private void initializeQueue(MethodMetaData requiredMethod, ClassMetaDada classMetaData,
+            Map<String, List<Integer>> methodMetaDataCache, Map<String, ClassMetaDada> classMetaDataCache)
+            throws JfuncException {
         List<InternalMethod> internallyCalledLocalMethods = requiredMethod.getClassOwnedInternallyCalledMethods();
         List<MethodMetaData> methodMethodDataList = classMetaData.getMethodMetadaList();
-
         for (MethodMetaData methodMetaData : methodMethodDataList) {
             for (InternalMethod internalMethod : internallyCalledLocalMethods) {
                 if (checkForMethodMatch(internalMethod, methodMetaData)
-                        && !checkIfMethodMetaDataIsAlreadyAddedInQueue(classMetaData, methodMetaData)) {
+                        && !checkIfMethodMetaDataIsAlreadyAddedInQueue(classMetaData, methodMetaData,
+                                methodMetaDataCache)) {
                     // add this methodMetada in queue
                     queue.enqueue(new RequirementsWrapper(methodMetaData, false, false));
                     // there is a chance where this method may call some other methods
-                    initializeQueue(methodMetaData, classMetaData);
+                    initializeQueue(methodMetaData, classMetaData, methodMetaDataCache, classMetaDataCache);
                     break;
                 }
             }
@@ -148,15 +158,16 @@ public class FunctionalityTester {
         List<InternalMethod> projectOwnedMethods = requiredMethod.getProjectOwnedInternallyCalledMethods();
         for (InternalMethod internalMethod : projectOwnedMethods) {
             String className = internalMethod.getOwner() + JfuncConstants.CLASS;
-            ClassMetaDada newClassMetaData = checkAndConstructClassMetaData(className);
+            ClassMetaDada newClassMetaData = checkAndConstructClassMetaData(className, classMetaDataCache);
             if (newClassMetaData != null) {
                 List<MethodMetaData> newMethodMethodDataList = newClassMetaData.getMethodMetadaList();
                 for (MethodMetaData methodMetaData : newMethodMethodDataList) {
                     if (checkForMethodMatch(internalMethod, methodMetaData)
-                            && !checkIfMethodMetaDataIsAlreadyAddedInQueue(classMetaData, methodMetaData)) {
+                            && !checkIfMethodMetaDataIsAlreadyAddedInQueue(classMetaData, methodMetaData,
+                                    methodMetaDataCache)) {
                         // add this methodMetada in queue
                         queue.enqueue(new RequirementsWrapper(methodMetaData, false, false));
-                        initializeQueue(methodMetaData, classMetaData);
+                        initializeQueue(methodMetaData, classMetaData, methodMetaDataCache, classMetaDataCache);
                     }
                 }
             }
@@ -187,7 +198,7 @@ public class FunctionalityTester {
      * @return
      */
     private boolean checkIfMethodMetaDataIsAlreadyAddedInQueue(ClassMetaDada classMetaData,
-            MethodMetaData methodMetaData) {
+            MethodMetaData methodMetaData, Map<String, List<Integer>> methodMetaDataCache) {
         // we are using method name and method params to create an hashcode because there may be
         // overloaded methods. And one overloaded method can internally call other overloaded
         // method
@@ -266,7 +277,8 @@ public class FunctionalityTester {
      * @return {@link ClassMetaDada}
      * @throws JfuncException
      */
-    private ClassMetaDada checkAndConstructClassMetaData(String classMetaDataName) throws JfuncException {
+    private ClassMetaDada checkAndConstructClassMetaData(String classMetaDataName,
+            Map<String, ClassMetaDada> classMetaDataCache) throws JfuncException {
         ClassMetaDada requiredClassMetaData = null;
         String classFilePath = classLoader.getResource(classMetaDataName).toString();
         classFilePath = classFilePath.replace(JfuncConstants.FILE, JfuncConstants.EMPTY_STRING);

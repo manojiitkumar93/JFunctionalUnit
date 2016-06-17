@@ -7,10 +7,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import com.jfunc.core.JFuncWorkerThread;
-import com.jfunc.model.JFuncExecutor;
+import com.jfunc.core.NonFunctionalityReason;
 import com.jfunc.validator.JfuncConstants;
 
-public class JFuncExecutorImpl implements JFuncExecutor {
+public class JFuncExecutorImpl {
     private static JFuncExecutorImpl instance = new JFuncExecutorImpl();
     private ExecutorService jFuncExecutorService;
 
@@ -18,14 +18,16 @@ public class JFuncExecutorImpl implements JFuncExecutor {
         return instance;
     }
 
-    @Override
-    public void startService() {
+    public void startService(JFuncQueueImpl queue, NonFunctionalityReason nonFunctionalityReasonInstance) {
         jFuncExecutorService = Executors.newFixedThreadPool(JfuncConstants.THREADS);
         List<Future<?>> futures = new ArrayList<Future<?>>();
-        for (int i = 0; i < JfuncConstants.THREADS; i++) {
-            futures.add(jFuncExecutorService.submit(new JFuncWorkerThread(JFuncQueueImpl.getInstance())));
+        int iterationCount = (JfuncConstants.THREADS >= queue.size()) ? queue.size() : JfuncConstants.THREADS;
+        for (int i = 0; i < iterationCount; i++) {
+            futures.add(jFuncExecutorService
+                    .submit(new JFuncWorkerThread(JFuncQueueImpl.getInstance(), nonFunctionalityReasonInstance)));
         }
-        // this makes sure any method which calls this method will wait till all the tasks in the queue
+        // this makes sure any method which calls this method will wait till all the tasks in the
+        // queue
         // are finished
         for (Future<?> future : futures) {
             try {
@@ -34,6 +36,7 @@ public class JFuncExecutorImpl implements JFuncExecutor {
                 e.printStackTrace();
             }
         }
+        jFuncExecutorService.shutdown();
     }
 
 

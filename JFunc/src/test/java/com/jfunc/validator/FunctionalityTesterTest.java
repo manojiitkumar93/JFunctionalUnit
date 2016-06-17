@@ -1,18 +1,7 @@
 package com.jfunc.validator;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Before;
 import org.junit.Test;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.jfunc.util.JsonUtils;
 
 public class FunctionalityTesterTest {
     FunctionalityTester functionalityTester;
@@ -23,32 +12,59 @@ public class FunctionalityTesterTest {
         functionalityTester = new FunctionalityTester(filePath);
     }
 
-    @Test
-    public void test_byJustPassingMethodName() throws Exception {
-        ObjectMapper mapper = JsonUtils.getObjectMapper();
-        String reasonsString = functionalityTester.testMethod("example", false, false);
-        System.out.println(reasonsString);
-        assertNotNull(reasonsString);
-        JsonNode reasonsNode = mapper.readTree(reasonsString);
-        assertEquals("false", reasonsNode.get(JfuncConstants.ISFUNCTIONAL).toString());
-        ObjectNode node = (ObjectNode) reasonsNode.get("Reasons");
-        assertEquals(2, node.get("com/jfunc/validator/Example1").size());
 
+    @Test
+    public void test_Method_withPrintAndLogStatements() throws Exception {
+        FunctionalityTester functionalityTester = new FunctionalityTester(filePath);
+        String reasonsString = functionalityTester.testMethod("method1");
+        System.out.println(reasonsString);
+
+        // skip log statements
+        reasonsString = functionalityTester.testMethod("method1", true, false);
+        System.out.println(reasonsString);
+
+        // skip print statements
+        reasonsString = functionalityTester.testMethod("method1", false, true);
+        System.out.println(reasonsString);
+
+        // skip both log and print statements
+        reasonsString = functionalityTester.testMethod("method1", true, true);
+        System.out.println(reasonsString);
     }
 
     @Test
-    public void test_byPassingMethodNameAlongWithArguments() throws Exception {
-        List<String> argumentsClassNameList = new ArrayList<>();
-        argumentsClassNameList.add("int");
-        argumentsClassNameList.add("java.util.List");
-        ObjectMapper mapper = JsonUtils.getObjectMapper();
-        String reasonsString = functionalityTester.testMethod("example", argumentsClassNameList,false,true);
+    public void test_Method_callingNonFunctionalMethods() throws Exception {
+        FunctionalityTester functionalityTester = new FunctionalityTester(filePath);
+        String reasonsString = functionalityTester.testMethod("method2", false, false);
         System.out.println(reasonsString);
-        assertNotNull(reasonsString);
-        JsonNode reasonsNode = mapper.readTree(reasonsString);
-        assertEquals("false", reasonsNode.get(JfuncConstants.ISFUNCTIONAL).toString());
-        ObjectNode node = (ObjectNode) reasonsNode.get("Reasons");
-        assertEquals(2, node.get("com/jfunc/validator/Example1").size());
 
+        // skipping log and prints statements works only for the input method
+        reasonsString = functionalityTester.testMethod("method2", true, false);
+        System.out.println(reasonsString);
+    }
+    
+    @Test
+    public void test_Method_callingFunctionalMethods() throws Exception {
+        FunctionalityTester functionalityTester = new FunctionalityTester(filePath);
+        String reasonsString = functionalityTester.testMethod("method4");
+        System.out.println(reasonsString);
+    }
+
+    @Test
+    public void test_Method_callingNonFunctionalMethodsFromOtherClass() throws Exception {
+        FunctionalityTester functionalityTester = new FunctionalityTester(filePath);
+        String reasonsString = functionalityTester.testMethod("method3", false, false);
+        System.out.println(reasonsString);
+
+        // skipping log and prints statements works only for the input method
+        reasonsString = functionalityTester.testMethod("method3", true, true);
+        System.out.println(reasonsString);
+    }
+    
+    @Test
+    public void test_Method_CallingNonFunctionalMethodFromItsOwnClassAndOtherClasses() throws Exception{
+        FunctionalityTester functionalityTester = new FunctionalityTester(filePath);
+        String reasonsString = functionalityTester.testMethod("method5", false, false);
+        System.out.println(reasonsString);
     }
 }

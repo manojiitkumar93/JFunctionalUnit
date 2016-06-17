@@ -9,7 +9,8 @@ import com.jfunc.validator.RequirementsWrapper;
 public class JFuncQueueImpl implements JFuncQueue {
 
     private static JFuncQueueImpl instance = new JFuncQueueImpl();
-    private BlockingQueue<RequirementsWrapper> functionalityTesterQueue = new LinkedBlockingQueue<RequirementsWrapper>();
+    private BlockingQueue<RequirementsWrapper> functionalityTesterQueue =
+            new LinkedBlockingQueue<RequirementsWrapper>();
 
     public static JFuncQueueImpl getInstance() {
         return instance;
@@ -38,6 +39,10 @@ public class JFuncQueueImpl implements JFuncQueue {
     @Override
     public boolean isEmpty() {
         return functionalityTesterQueue.isEmpty();
+    }
+
+    public int size() {
+        return functionalityTesterQueue.size();
     }
 
 }

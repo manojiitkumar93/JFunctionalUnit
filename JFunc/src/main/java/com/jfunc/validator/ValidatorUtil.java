@@ -19,16 +19,16 @@ import com.jfunc.core.NonFunctionalityReason;
  */
 public class ValidatorUtil {
 
-    public static NonFunctionalityReason validate(MethodMetaData methodMetaData) {
-        return validate(methodMetaData, false, false);
+    public static NonFunctionalityReason validate(MethodMetaData methodMetaData,NonFunctionalityReason nonFunctionalityReasonInstance) {
+        return validate(methodMetaData,nonFunctionalityReasonInstance, false, false);
     }
 
-    public static NonFunctionalityReason validate(MethodMetaData methodMetaData, boolean skipLogStatements,
+    public static NonFunctionalityReason validate(MethodMetaData methodMetaData,NonFunctionalityReason nonFunctionalityReasonInstance, boolean skipLogStatements,
             boolean skipPrintStatements) {
-        return getReasons(methodMetaData, skipLogStatements, skipPrintStatements);
+        return getReasons(methodMetaData, nonFunctionalityReasonInstance,skipLogStatements, skipPrintStatements);
     }
 
-    private static NonFunctionalityReason getReasons(MethodMetaData methodMetaData, boolean skipLogStatements,
+    private static NonFunctionalityReason getReasons(MethodMetaData methodMetaData,NonFunctionalityReason nonFunctionalityReasonInstance, boolean skipLogStatements,
             boolean skipPrintStatements) {
 
         Map<String, List<String>> lineToReasonsList = new HashMap<>();
@@ -37,7 +37,10 @@ public class ValidatorUtil {
         if (!methodMetaData.getInternallyRefferedFields().isEmpty()) {
             List<InternalFeild> refferedFields = methodMetaData.getInternallyRefferedFields();
             for (InternalFeild internalField : refferedFields) {
-                updateLineToReasonsListMap(lineToReasonsList, JfuncConstants.REFFERED_OBJECT, internalField);
+                // skip adding log and print statements as referred objects
+                if (!(containsLogStatements(internalField) || containsPrintStatements(internalField))) {
+                    updateLineToReasonsListMap(lineToReasonsList, JfuncConstants.REFFERED_OBJECT, internalField);
+                }
             }
         }
 
@@ -53,7 +56,6 @@ public class ValidatorUtil {
                 }
             }
         }
-        NonFunctionalityReason nonFunctionalityReasonInstance = NonFunctionalityReason.getInstance();
         nonFunctionalityReasonInstance.addNewMethod(methodMetaData.getClassName(), methodMetaData.getMethodName(),
                 lineToReasonsList, isVoid(methodMetaData));
         return nonFunctionalityReasonInstance;
