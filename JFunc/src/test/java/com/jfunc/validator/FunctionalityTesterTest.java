@@ -81,4 +81,11 @@ public class FunctionalityTesterTest {
         String reasonsString = functionalityTester.testMethod("method8");
         System.out.println(reasonsString);
     }
+    
+    @Test
+    public void test_Method_WhichDoesNotTakeArguments() throws Exception{
+        FunctionalityTester functionalityTester = new FunctionalityTester(filePath);
+        String reasonsString = functionalityTester.testMethod("method9");
+        System.out.println(reasonsString);
+    }
 }

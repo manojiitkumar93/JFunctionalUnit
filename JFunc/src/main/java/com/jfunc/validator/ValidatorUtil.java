@@ -19,16 +19,19 @@ import com.jfunc.core.NonFunctionalityReason;
  */
 public class ValidatorUtil {
 
-    public static NonFunctionalityReason validate(MethodMetaData methodMetaData,NonFunctionalityReason nonFunctionalityReasonInstance) {
-        return validate(methodMetaData,nonFunctionalityReasonInstance, false, false);
+    public static NonFunctionalityReason validate(MethodMetaData methodMetaData,
+            NonFunctionalityReason nonFunctionalityReasonInstance) {
+        return validate(methodMetaData, nonFunctionalityReasonInstance, false, false);
     }
 
-    public static NonFunctionalityReason validate(MethodMetaData methodMetaData,NonFunctionalityReason nonFunctionalityReasonInstance, boolean skipLogStatements,
+    public static NonFunctionalityReason validate(MethodMetaData methodMetaData,
+            NonFunctionalityReason nonFunctionalityReasonInstance, boolean skipLogStatements,
             boolean skipPrintStatements) {
-        return getReasons(methodMetaData, nonFunctionalityReasonInstance,skipLogStatements, skipPrintStatements);
+        return getReasons(methodMetaData, nonFunctionalityReasonInstance, skipLogStatements, skipPrintStatements);
     }
 
-    private static NonFunctionalityReason getReasons(MethodMetaData methodMetaData,NonFunctionalityReason nonFunctionalityReasonInstance, boolean skipLogStatements,
+    private static NonFunctionalityReason getReasons(MethodMetaData methodMetaData,
+            NonFunctionalityReason nonFunctionalityReasonInstance, boolean skipLogStatements,
             boolean skipPrintStatements) {
 
         Map<String, List<String>> lineToReasonsList = new HashMap<>();
@@ -57,7 +60,7 @@ public class ValidatorUtil {
             }
         }
         nonFunctionalityReasonInstance.addNewMethod(methodMetaData.getClassName(), methodMetaData.getMethodName(),
-                lineToReasonsList, isVoid(methodMetaData));
+                lineToReasonsList, isVoid(methodMetaData), doesMethodHasParameters(methodMetaData));
         return nonFunctionalityReasonInstance;
     }
 
@@ -83,6 +86,10 @@ public class ValidatorUtil {
 
     private static boolean isVoid(MethodMetaData methodMetaData) {
         return (StringUtils.equals(JfuncConstants.VOID, methodMetaData.getMethodReturnType())) ? true : false;
+    }
+
+    private static boolean doesMethodHasParameters(MethodMetaData methodMetaData) {
+        return !methodMetaData.getArgumetsClassName().isEmpty();
     }
 }
 
