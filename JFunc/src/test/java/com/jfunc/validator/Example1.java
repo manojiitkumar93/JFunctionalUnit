@@ -61,6 +61,14 @@ public class Example1 {
         return input;
     }
 
+    public void method10(int input) {
+        if (input > 0) {
+            input = input - 1;
+            method10(input);
+        } else
+            System.out.println(input);
+    }
+
     private int privateMethod1(int input) {
         return input;
     }

@@ -20,4 +20,6 @@ public class JfuncConstants {
     public static final int THREADS = 5;
     public static final String METHOD_WITH_NO_PARAMETRES = "doesNotTakeArguments";
     public static final String METHOD_ARGUMETS = "arguments";
+    public static final String STATEMENTS = "statements";
+    public static final String NO_STATEMENTS = "doesNotHaveAnyStatements";
 }

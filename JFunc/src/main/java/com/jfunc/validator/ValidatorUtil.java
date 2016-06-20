@@ -60,7 +60,7 @@ public class ValidatorUtil {
             }
         }
         nonFunctionalityReasonInstance.addNewMethod(methodMetaData.getClassName(), methodMetaData.getMethodName(),
-                lineToReasonsList, isVoid(methodMetaData), doesMethodHasParameters(methodMetaData));
+                lineToReasonsList, isVoid(methodMetaData), doesMethodHasParameters(methodMetaData),doesMethodHasAnyStatements(methodMetaData));
         return nonFunctionalityReasonInstance;
     }
 
@@ -90,6 +90,10 @@ public class ValidatorUtil {
 
     private static boolean doesMethodHasParameters(MethodMetaData methodMetaData) {
         return !methodMetaData.getArgumetsClassName().isEmpty();
+    }
+
+    private static boolean doesMethodHasAnyStatements(MethodMetaData methodMetaData) {
+        return !methodMetaData.getByteCode().isEmpty();
     }
 }
 

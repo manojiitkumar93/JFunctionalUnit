@@ -4,11 +4,12 @@ import org.junit.Test;
 
 public class FunctionalityTesterTest {
 
-    private String filePath = "com/jfunc/validator/Example1.class";
+    private String filePath1 = "com/jfunc/validator/Example1.class";
+    private String filePath2 = "com/jfunc/validator/Example4.class";
 
     @Test
     public void test_Method_withPrintAndLogStatements() throws Exception {
-        FunctionalityTester functionalityTester = new FunctionalityTester(filePath);
+        FunctionalityTester functionalityTester = new FunctionalityTester(filePath1);
         String reasonsString = functionalityTester.testMethod("method1");
         System.out.println(reasonsString);
 
@@ -27,7 +28,7 @@ public class FunctionalityTesterTest {
 
     @Test
     public void test_Method_callingNonFunctionalMethods() throws Exception {
-        FunctionalityTester functionalityTester = new FunctionalityTester(filePath);
+        FunctionalityTester functionalityTester = new FunctionalityTester(filePath1);
         String reasonsString = functionalityTester.testMethod("method2", false, false);
         System.out.println(reasonsString);
 
@@ -38,14 +39,14 @@ public class FunctionalityTesterTest {
 
     @Test
     public void test_Method_callingFunctionalMethods() throws Exception {
-        FunctionalityTester functionalityTester = new FunctionalityTester(filePath);
+        FunctionalityTester functionalityTester = new FunctionalityTester(filePath1);
         String reasonsString = functionalityTester.testMethod("method4");
         System.out.println(reasonsString);
     }
 
     @Test
     public void test_Method_callingNonFunctionalMethodsFromOtherClass() throws Exception {
-        FunctionalityTester functionalityTester = new FunctionalityTester(filePath);
+        FunctionalityTester functionalityTester = new FunctionalityTester(filePath1);
         String reasonsString = functionalityTester.testMethod("method3", false, false);
         System.out.println(reasonsString);
 
@@ -56,36 +57,50 @@ public class FunctionalityTesterTest {
 
     @Test
     public void test_Method_CallingNonFunctionalMethodFromItsOwnClassAndOtherClasses() throws Exception {
-        FunctionalityTester functionalityTester = new FunctionalityTester(filePath);
+        FunctionalityTester functionalityTester = new FunctionalityTester(filePath1);
         String reasonsString = functionalityTester.testMethod("method5", false, false);
         System.out.println(reasonsString);
     }
 
     @Test
     public void test_Method_RefferingFinalPrimitiveFields() throws Exception {
-        FunctionalityTester functionalityTester = new FunctionalityTester(filePath);
+        FunctionalityTester functionalityTester = new FunctionalityTester(filePath1);
         String reasonsString = functionalityTester.testMethod("method6");
         System.out.println(reasonsString);
     }
 
     @Test
     public void test_Method_RefferingFinalNonPrimitiveFields() throws Exception {
-        FunctionalityTester functionalityTester = new FunctionalityTester(filePath);
+        FunctionalityTester functionalityTester = new FunctionalityTester(filePath1);
         String reasonsString = functionalityTester.testMethod("method7");
         System.out.println(reasonsString);
     }
 
     @Test
     public void test_Method_RefferingFields() throws Exception {
-        FunctionalityTester functionalityTester = new FunctionalityTester(filePath);
+        FunctionalityTester functionalityTester = new FunctionalityTester(filePath1);
         String reasonsString = functionalityTester.testMethod("method8");
         System.out.println(reasonsString);
     }
-    
+
     @Test
-    public void test_Method_WhichDoesNotTakeArguments() throws Exception{
-        FunctionalityTester functionalityTester = new FunctionalityTester(filePath);
+    public void test_Method_WhichDoesNotTakeArguments() throws Exception {
+        FunctionalityTester functionalityTester = new FunctionalityTester(filePath1);
         String reasonsString = functionalityTester.testMethod("method9");
+        System.out.println(reasonsString);
+    }
+
+    @Test
+    public void test_RecursiveMethod() throws Exception {
+        FunctionalityTester functionalityTester = new FunctionalityTester(filePath1);
+        String reasonsString = functionalityTester.testMethod("method10");
+        System.out.println(reasonsString);
+    }
+
+    @Test
+    public void test_Method_InterfaceMethod() throws Exception {
+        FunctionalityTester functionalityTester = new FunctionalityTester(filePath2);
+        String reasonsString = functionalityTester.testMethod("method1");
         System.out.println(reasonsString);
     }
 }
