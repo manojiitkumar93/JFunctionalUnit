@@ -26,13 +26,8 @@ public class NonFunctionalityReason {
     private ObjectMapper mapper = JsonUtils.getObjectMapper();
     private ObjectNode objectNode = mapper.createObjectNode();
     private ObjectNode reasonsNode = mapper.createObjectNode();
-    private static NonFunctionalityReason instance = new NonFunctionalityReason();
 
-    private NonFunctionalityReason() {}
-
-    public static NonFunctionalityReason getInstance() {
-        return instance;
-    }
+    public NonFunctionalityReason() {}
 
     /**
      * Constructs and adds new method object to non functionality reasons json.<br>
@@ -45,20 +40,24 @@ public class NonFunctionalityReason {
      * @param isVoid
      */
     public synchronized void addNewMethod(String className, String methodName,
-            Map<String, List<String>> lineToReasonsListMap, boolean isVoid) {
+            Map<String, List<String>> lineToReasonsListMap, boolean isVoid, boolean doesMethodTakesParametres) {
         ObjectNode classNode = (ObjectNode) reasonsNode.get(className);
         if (classNode == null && !methodName.equals(JfuncConstants.INITIALIZATION_METHOD)) {
-            updateReasonNode(className, methodName, lineToReasonsListMap, isVoid, mapper.createObjectNode());
+            updateReasonNode(className, methodName, lineToReasonsListMap, isVoid, doesMethodTakesParametres,
+                    mapper.createObjectNode());
         } else if (!methodName.equals(JfuncConstants.INITIALIZATION_METHOD)) {
-            updateReasonNode(className, methodName, lineToReasonsListMap, isVoid, classNode);
+            updateReasonNode(className, methodName, lineToReasonsListMap, isVoid, doesMethodTakesParametres, classNode);
         }
     }
 
     private void updateReasonNode(String className, String methodName, Map<String, List<String>> lineToReasonsListMap,
-            boolean isVoid, ObjectNode classNode) {
+            boolean isVoid, boolean doesMethodTakesParametres, ObjectNode classNode) {
         ObjectNode lineNode = mapper.createObjectNode();
         if (isVoid) {
             lineNode.put(JfuncConstants.METHODRETURNTYPE, JfuncConstants.VOID);
+        }
+        if (!doesMethodTakesParametres) {
+            lineNode.put(JfuncConstants.METHOD_ARGUMETS, JfuncConstants.METHOD_WITH_NO_PARAMETRES);
         }
         if (!lineToReasonsListMap.isEmpty()) {
             Set<Entry<String, List<String>>> elements = lineToReasonsListMap.entrySet();

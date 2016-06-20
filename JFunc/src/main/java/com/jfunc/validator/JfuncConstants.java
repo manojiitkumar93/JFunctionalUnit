@@ -18,4 +18,6 @@ public class JfuncConstants {
     public static final String FILE = "file:";
     public static final String EMPTY_STRING = "";
     public static final int THREADS = 5;
+    public static final String METHOD_WITH_NO_PARAMETRES = "doesNotTakeArguments";
+    public static final String METHOD_ARGUMETS = "arguments";
 }
