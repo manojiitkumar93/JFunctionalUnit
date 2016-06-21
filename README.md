@@ -26,17 +26,9 @@ Main theme of JFunctionalUint is to find whether a method is implemented in a fu
         return input;
     }
 ```
-- Methods calling  (Log,Print statements, File operations, Data-Base operations, etc)
-```
- public int method3(int input) {
-        System.out.println(input);
-        logger.info("input " + input);
-        return input;
-    }
-```
 - Methods calling another method which is not a function
 ```
- public int method4(int input) {
+ public int method3(int input) {
        instruction1;
        instruction2;
        output = privateMethod(input);
