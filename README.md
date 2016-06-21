@@ -147,6 +147,97 @@ public int method1(int number,List<Integer> list){
     return output;
 }
 ```
+### JFunctionlUint out-put
+Out-put from JFunctionalUnit will be JSON of format...
+```
+//If the input "method" is not validated as function then the result will be in the format
+{
+  "isFunctional": false,
+  "Reasons": {
+    "package/Class": {
+      "Method1": {
+        "Line-Number1": [
+          "Reason1","Reason2"
+        ],
+        "Line-Number2": [
+          "Reason2","Reason2"
+        ]
+      }
+    }
+  }
+}
+
+// If the method is validated as a function then the result will be
+{
+  "isFunctional": true
+}
+```
+##### For Example 
+
+```
+public class SomeClass{
+    private  int count = 0;
+    private static final int value = 2;
+    private final List<Integer> list = new ArrayList<>();
+    private static Logger logger = Logger.getLogger("Logger");
+    
+    public int methodA(int input){
+1)        System.out.println("methodA started");
+2)        logger.info("input :"+input);
+3)        input = input + value;
+4)        count = count + 1;
+5)        list.add(input);
+6)        privateMethod1(input);
+7)        privateMethod2();
+8)        return input;
+    }
+    
+    private void privateMethod1(int input){
+9)       System.out.println("privateMethod started");
+10)      instruction1;
+11)      instruction2;
+    }
+    
+    private void privateMethod2(){
+12)     instruction1;
+13)     instruction2;
+}
+
+Result of JFunctionUnit for this "methodA" will be..
+
+{
+  "isFunctional": false,
+  "Reasons": {
+    "package/SomeClass": {
+      "methodA": {
+        "1": [
+          "java/io/PrintStream"
+        ],
+        "2": [
+          "Logger"
+        ],
+        "3": [
+          "refferedObjects"
+        ],
+        "5": [
+          "refferedObjects"
+        ]
+      },
+      "privateMethod1":{
+        "methodReturnType":"void",
+        "9":[
+          "java/io/PrintStream"
+        ]
+      },
+       "privateMethod2":{
+        "methodReturnType":"void",
+        "arguments":"doesNotTakeArguments"
+      }
+    }
+  }
+}
+
+```
 
 
     
