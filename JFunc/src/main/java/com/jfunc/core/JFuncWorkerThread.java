@@ -1,26 +1,23 @@
 package com.jfunc.core;
 
-import com.jfunc.model.impl.JFuncQueueImpl;
 import com.jfunc.validator.RequirementsWrapper;
 import com.jfunc.validator.ValidatorUtil;
 
 public class JFuncWorkerThread implements Runnable {
 
-    private JFuncQueueImpl queue;
     private NonFunctionalityReason nonFunctionalityReason;
+    private RequirementsWrapper requirementsWrapper;
 
-    public JFuncWorkerThread(JFuncQueueImpl queue,NonFunctionalityReason nonFunctionalityReasonInstance) {
-        this.queue = queue;
+    public JFuncWorkerThread(RequirementsWrapper requirementsWrapper,
+            NonFunctionalityReason nonFunctionalityReasonInstance) {
         this.nonFunctionalityReason = nonFunctionalityReasonInstance;
+        this.requirementsWrapper = requirementsWrapper;
     }
 
     @Override
     public void run() {
-        while (!queue.isEmpty()) {
-            RequirementsWrapper requirementsWrapper = (RequirementsWrapper) queue.dequeue();
-            ValidatorUtil.validate(requirementsWrapper.getClassMetaData(),nonFunctionalityReason, requirementsWrapper.skipLogStatements(),
-                    requirementsWrapper.skipPrintStatements());
-        }
+        ValidatorUtil.validate(requirementsWrapper.getClassMetaData(), nonFunctionalityReason,
+                requirementsWrapper.skipLogStatements(), requirementsWrapper.skipPrintStatements());
     }
 
 }

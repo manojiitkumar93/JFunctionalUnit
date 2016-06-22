@@ -9,6 +9,7 @@ import java.util.concurrent.Future;
 import com.jfunc.core.JFuncWorkerThread;
 import com.jfunc.core.NonFunctionalityReason;
 import com.jfunc.validator.JfuncConstants;
+import com.jfunc.validator.RequirementsWrapper;
 
 public class JFuncExecutorImpl {
     private static JFuncExecutorImpl instance = new JFuncExecutorImpl();
@@ -21,14 +22,14 @@ public class JFuncExecutorImpl {
     public void startService(JFuncQueueImpl queue, NonFunctionalityReason nonFunctionalityReasonInstance) {
         jFuncExecutorService = Executors.newFixedThreadPool(JfuncConstants.THREADS);
         List<Future<?>> futures = new ArrayList<Future<?>>();
-        int iterationCount = (JfuncConstants.THREADS >= queue.size()) ? queue.size() : JfuncConstants.THREADS;
-        for (int i = 0; i < iterationCount; i++) {
+        for (int i = 0; i < queue.size(); i++) {
+            RequirementsWrapper requirementsWrapper = (RequirementsWrapper) queue.dequeue();
             futures.add(jFuncExecutorService
-                    .submit(new JFuncWorkerThread(JFuncQueueImpl.getInstance(), nonFunctionalityReasonInstance)));
+                    .submit(new JFuncWorkerThread(requirementsWrapper, nonFunctionalityReasonInstance)));
         }
+
         // this makes sure any method which calls this method will wait till all the tasks in the
-        // queue
-        // are finished
+        // queue are finished
         for (Future<?> future : futures) {
             try {
                 future.get();

@@ -31,7 +31,6 @@ public class FunctionalityTester {
     private ClassMetaDada classMetaData;
     private ClassReader classReader = null;
     private ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-    private JFuncQueueImpl queue = JFuncQueueImpl.getInstance();
 
     public FunctionalityTester(String packagePath) throws Exception {
         URL filePath = classLoader.getResource(packagePath);
@@ -69,8 +68,10 @@ public class FunctionalityTester {
         if (requiredMethod == null) {
             throw new JfuncException("No method exists with Methtod Name : " + methodName);
         }
+        JFuncQueueImpl queue = new JFuncQueueImpl();
         queue.enqueue(new RequirementsWrapper(requiredMethod, skipLogging, skipPrintStatements));
-        initializeQueue(requiredMethod, classMetaData, methodMetaDataCache, classMetaDataCache);
+        initializeQueue(requiredMethod, classMetaData, methodMetaDataCache, classMetaDataCache, skipLogging,
+                skipPrintStatements, queue);
         NonFunctionalityReason nonFunctionalityReason = new NonFunctionalityReason();
         JFuncExecutorImpl.getInstnace().startService(queue, nonFunctionalityReason);
         return nonFunctionalityReason.getReasonsJson().toString();
@@ -117,9 +118,11 @@ public class FunctionalityTester {
         if (requiredMethod == null) {
             throw new JfuncException("No method exists with Methtod Name : " + methodName);
         }
+        JFuncQueueImpl queue = new JFuncQueueImpl();
         queue.enqueue(new RequirementsWrapper(requiredMethod, skipLogging, skipPrintStatements));
-        initializeQueue(requiredMethod, classMetaData, methodMetaDataCache, classMetaDataCache);
-        System.out.println("Queue Size" + queue.size());
+        initializeQueue(requiredMethod, classMetaData, methodMetaDataCache, classMetaDataCache, skipLogging,
+                skipPrintStatements, queue);
+        // System.out.println("Queue Size" + queue.size());
         NonFunctionalityReason nonFunctionalityReason = new NonFunctionalityReason();
         JFuncExecutorImpl.getInstnace().startService(queue, nonFunctionalityReason);
         return nonFunctionalityReason.getReasonsJson().toString();
@@ -137,8 +140,8 @@ public class FunctionalityTester {
      * @throws JfuncException
      */
     private void initializeQueue(MethodMetaData requiredMethod, ClassMetaDada classMetaData,
-            Map<String, List<Integer>> methodMetaDataCache, Map<String, ClassMetaDada> classMetaDataCache)
-            throws JfuncException {
+            Map<String, List<Integer>> methodMetaDataCache, Map<String, ClassMetaDada> classMetaDataCache,
+            boolean skipLogging, boolean skipPrintStatements, JFuncQueueImpl queue) throws JfuncException {
         List<InternalMethod> internallyCalledLocalMethods = requiredMethod.getClassOwnedInternallyCalledMethods();
         List<MethodMetaData> methodMethodDataList = classMetaData.getMethodMetadaList();
         for (MethodMetaData methodMetaData : methodMethodDataList) {
@@ -147,9 +150,10 @@ public class FunctionalityTester {
                         && !checkIfMethodMetaDataIsAlreadyAddedInQueue(classMetaData, methodMetaData,
                                 methodMetaDataCache)) {
                     // add this methodMetada in queue
-                    queue.enqueue(new RequirementsWrapper(methodMetaData, false, false));
+                    queue.enqueue(new RequirementsWrapper(methodMetaData, skipLogging, skipPrintStatements));
                     // there is a chance where this method may call some other methods
-                    initializeQueue(methodMetaData, classMetaData, methodMetaDataCache, classMetaDataCache);
+                    initializeQueue(methodMetaData, classMetaData, methodMetaDataCache, classMetaDataCache, skipLogging,
+                            skipPrintStatements, queue);
                     break;
                 }
             }
@@ -166,8 +170,9 @@ public class FunctionalityTester {
                             && !checkIfMethodMetaDataIsAlreadyAddedInQueue(classMetaData, methodMetaData,
                                     methodMetaDataCache)) {
                         // add this methodMetada in queue
-                        queue.enqueue(new RequirementsWrapper(methodMetaData, false, false));
-                        initializeQueue(methodMetaData, classMetaData, methodMetaDataCache, classMetaDataCache);
+                        queue.enqueue(new RequirementsWrapper(methodMetaData, skipLogging, skipPrintStatements));
+                        initializeQueue(methodMetaData, classMetaData, methodMetaDataCache, classMetaDataCache,
+                                skipLogging, skipPrintStatements, queue);
                     }
                 }
             }

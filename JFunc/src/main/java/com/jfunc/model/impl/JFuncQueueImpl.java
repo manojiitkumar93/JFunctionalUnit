@@ -1,5 +1,6 @@
 package com.jfunc.model.impl;
 
+import java.util.NoSuchElementException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -8,13 +9,8 @@ import com.jfunc.validator.RequirementsWrapper;
 
 public class JFuncQueueImpl implements JFuncQueue {
 
-    private static JFuncQueueImpl instance = new JFuncQueueImpl();
     private BlockingQueue<RequirementsWrapper> functionalityTesterQueue =
             new LinkedBlockingQueue<RequirementsWrapper>();
-
-    public static JFuncQueueImpl getInstance() {
-        return instance;
-    }
 
     @Override
     public void enqueue(Object object) {
@@ -29,8 +25,8 @@ public class JFuncQueueImpl implements JFuncQueue {
     public Object dequeue() {
         RequirementsWrapper tester = null;
         try {
-            tester = functionalityTesterQueue.take();
-        } catch (InterruptedException e) {
+            tester = functionalityTesterQueue.remove();
+        } catch (NoSuchElementException e) {
             e.printStackTrace();
         }
         return tester;

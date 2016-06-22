@@ -14,6 +14,7 @@ public class Example1 {
     public int method1(int input) {
         System.out.println(input);
         logger.info("input " + input);
+        privateMethod2(input);
         return input;
     }
 
@@ -68,7 +69,7 @@ public class Example1 {
         } else
             System.out.println(input);
     }
-
+    
     private int privateMethod1(int input) {
         return input;
     }
